@@ -22,8 +22,8 @@ icon.filename = smash_icon.png
 [android]
 android.permissions = INTERNET
 android.minapi = 21
-android.api = 34
-android.gradle_version = 7.2
+android.api = 33
+android.gradle_version = 7.0.2
 
 [buildozer]
 log_level = 2
