@@ -12,24 +12,37 @@ jobs:
     - name: Clonar repo
       uses: actions/checkout@v3
 
-    - name: Instalar dependencias del sistema
+    - name: Instalar dependencias + SDK de Android
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3-pip build-essential libssl-dev \
-          libffi-dev libsqlite3-dev zlib1g-dev libjpeg-dev libfreetype6-dev \
-          libpng-dev openjdk-11-jdk unzip zip git libtool m4 automake autoconf
+        sudo apt-get install -y wget unzip openjdk-11-jdk python3-pip build-essential \
+          libssl-dev libffi-dev libsqlite3-dev zlib1g-dev libjpeg-dev libfreetype6-dev \
+          libpng-dev git libtool m4 automake autoconf
+
+        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+        unzip cmdline-tools.zip
+        mkdir -p $HOME/android-sdk/cmdline-tools/latest
+        mv cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest
+
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
+
+        sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+        yes | sdkmanager --licenses
 
     - name: Instalar Buildozer y dependencias Python
       run: |
         pip install --user buildozer cython
-        echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
 
-    - name: Inicializar Buildozer y compilar
+    - name: Decodificar keystore desde secreto
+      run: echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
+
+    - name: Compilar APK con Buildozer
       run: |
-        buildozer android debug
+        buildozer android release
 
     - name: Subir APK como artefacto
       uses: actions/upload-artifact@v4
       with:
         name: SmashApp-APK
-        path: smash_app/bin/*.apk
+        path: bin/*.apk
