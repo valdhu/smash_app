@@ -8,12 +8,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Apuntamos las variables de entorno al SDK/NDK instalado por setup-android
+    env:
+      ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
+      ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk-bundle
+
     steps:
     - name: Clonar repo
       uses: actions/checkout@v3
 
     - name: Configurar Android SDK oficial
       uses: android-actions/setup-android@v3
+      with:
+        api-level: 33
+        build-tools: 36.0.0
+        ndk: 21.4.7075529
+
+    - name: Aceptar licencias de Android SDK
+      # sdkmanager viene dentro de $ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+      run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+
+    - name: Configurar Buildozer para usar el SDK existente
+      run: |
+        mkdir -p $HOME/.buildozer/android/platform
+        ln -s $ANDROID_SDK_ROOT $HOME/.buildozer/android/platform/android-sdk
 
     - name: Instalar dependencias base
       run: |
