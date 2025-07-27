@@ -10,7 +10,9 @@ source.dir = .
 source.include_exts = py,png,jpg,ttf
 version = 1.0.0
 
-requirements = python3,kivy,pillow
+requirements = python3,kivy,pillow,cython==0.29.34,python-for-android==2024.10.1
+
+p4a.patches = patches/fix_long.patch
 
 orientation = landscape
 fullscreen = 1
