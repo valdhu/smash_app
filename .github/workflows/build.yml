@@ -42,12 +42,12 @@ jobs:
             libtool libltdl-dev libtool-bin \
             autoconf automake pkg-config m4 autoconf-archive
 
-      - name: Install Buildozer, Cython and python-for-android
+      - name: Install Buildozer, Cython y python-for-android
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install --user \
             cython==0.29.34 \
-            python-for-android==2024.10.1 \
+            python-for-android==2024.1.21 \
             buildozer
 
       - name: Decode keystore from secret
