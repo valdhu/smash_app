@@ -1,42 +1,43 @@
 name: Build APK
+
 on:
   push:
     branches:
       - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-        
-      - name: Setup Android SDK
+
+      - name: Setup Android SDK (cmdline-tools base)
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: latest
-          packages: platform-tools,platforms;android-33,build-tools;36.0.0,ndk;21.4.7075529
           accept-android-sdk-licenses: true
-          
+
       - name: Install Android SDK packages
-          run: >
-              yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
-                "platform-tools" \
-                "platforms;android-33" \
-                "build-tools;36.0.0" \
-                "ndk;21.4.7075529"
-      
+        run: |
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;36.0.0" \
+            "ndk;21.4.7075529"
+
       - name: Configure Buildozer to use existing SDK
         run: |
           mkdir -p $HOME/.buildozer/android/platform
           ln -s $ANDROID_SDK_ROOT $HOME/.buildozer/android/platform/android-sdk
+
       - name: Instalar Python 3.10
-        run: >
+        run: |
           sudo apt-get update
-
           sudo apt-get install -y python3.10 python3.10-dev
-
           sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
-          
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -46,7 +47,7 @@ jobs:
             libjpeg-dev libfreetype6-dev libpng-dev git \
             libtool libltdl-dev libtool-bin \
             autoconf automake pkg-config m4 autoconf-archive
-            
+
       - name: Install Buildozer, Cython and p4a patched
         run: |
           python3 -m pip install --upgrade pip
@@ -54,15 +55,15 @@ jobs:
             cython==0.29.34 \
             python-for-android==2024.10.1 \
             buildozer
-            
+
       - name: Decode keystore from secret
         run: |
           echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
-          
+
       - name: Build APK (release)
         run: |
           buildozer android release
-          
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
