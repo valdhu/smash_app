@@ -1,4 +1,8 @@
 [app]
+android.release_keystore = key.keystore
+android.release_keystore_pass = agus99
+android.release_keyalias = smash_app
+android.release_keyalias_pass = agus99
 title = SSBU - Stage Selector [by Zaichu]
 package.name = ssbu_stage_selector
 package.domain = org.zaichu
