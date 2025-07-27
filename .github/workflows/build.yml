@@ -8,12 +8,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: $HOME/Android/Sdk
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Android SDK (cmdline-tools base)
+      - name: Setup Android SDK (cmdline-tools)
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: latest
@@ -22,20 +24,21 @@ jobs:
       - name: Pre-aceptar licencias del SDK
         run: |
           mkdir -p $ANDROID_SDK_ROOT/licenses
-          # licencia estándar
           echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > \
             $ANDROID_SDK_ROOT/licenses/android-sdk-license
-          # licencia preview (necesaria para algunas build-tools)
           echo "84831b9409646a918e30573bab4c9c91346d8abd" > \
             $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
 
-      - name: Install Android SDK packages
+      - name: Aceptar licencias pendientes
+        run: |
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+
+      - name: Instalar SDK Packages
         run: |
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
             "platform-tools" \
             "platforms;android-33" \
-            "build-tools;36.0.0" \
-            "ndk;21.4.7075529"
+            "build-tools;36.0.0"
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v4
@@ -52,7 +55,7 @@ jobs:
             libtool libltdl-dev libtool-bin \
             autoconf automake pkg-config m4 autoconf-archive
 
-      - name: Install Buildozer, Cython y python-for-android
+      - name: Install Buildozer, Cython & python-for-android
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install --user \
@@ -66,7 +69,7 @@ jobs:
 
       - name: Build APK (release)
         run: |
-          buildozer android release
+          ~/.local/bin/buildozer android release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
