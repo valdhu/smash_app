@@ -8,45 +8,40 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Apuntamos las variables de entorno al SDK/NDK instalado por setup-android
-    env:
-      ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
-      ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk-bundle
-
     steps:
     - name: Clonar repo
       uses: actions/checkout@v3
 
-    - name: Configurar Android SDK oficial
+    - name: Configurar Android SDK
       uses: android-actions/setup-android@v3
       with:
         api-level: 33
         build-tools: 36.0.0
         ndk: 21.4.7075529
 
-    - name: Aceptar licencias de Android SDK
-      # sdkmanager viene dentro de $ANDROID_SDK_ROOT/cmdline-tools/latest/bin
-      run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+    - name: Aceptar licencias del SDK
+      run: |
+        yes | sdkmanager --licenses
 
-    - name: Configurar Buildozer para usar el SDK existente
+    - name: Configurar Buildozer para usar el SDK instalado
       run: |
         mkdir -p $HOME/.buildozer/android/platform
         ln -s $ANDROID_SDK_ROOT $HOME/.buildozer/android/platform/android-sdk
 
-    - name: Instalar dependencias base
+    - name: Instalar dependencias del sistema
       run: |
         sudo apt-get update
         sudo apt-get install -y openjdk-11-jdk python3-pip build-essential \
           libssl-dev libffi-dev libsqlite3-dev zlib1g-dev libjpeg-dev libfreetype6-dev \
           libpng-dev git libtool m4 automake autoconf
 
-    - name: Instalar Buildozer y dependencias Python
+    - name: Instalar Buildozer y Cython
       run: pip install --user buildozer cython
 
     - name: Decodificar keystore desde secreto
       run: echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
 
-    - name: Compilar APK con Buildozer
+    - name: Compilar APK (release)
       run: buildozer android release
 
     - name: Subir APK como artefacto
