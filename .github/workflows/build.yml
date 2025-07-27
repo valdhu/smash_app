@@ -9,11 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Set up Android SDK paths
     env:
       ANDROID_SDK_ROOT: $HOME/Android/Sdk
       ANDROID_HOME:    $HOME/Android/Sdk
-      PATH:            $HOME/Android/Sdk/cmdline-tools/latest/bin:$HOME/Android/Sdk/platform-tools:$PATH
 
     steps:
       - name: Checkout repo
@@ -22,24 +20,29 @@ jobs:
       - name: Install SDK Command-Line Tools (v9123335)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y unzip wget
+          sudo apt-get install -y unzip wget tar
           mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip -O cmdline.zip
           unzip -q cmdline.zip -d $ANDROID_SDK_ROOT/cmdline-tools
           mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
           rm cmdline.zip
 
-      - name: Pre-aceptar licencias del SDK
+      - name: Add Android SDK tools to PATH
+        run: |
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+
+      - name: Pre-accept SDK licenses
         run: |
           mkdir -p $ANDROID_SDK_ROOT/licenses
           echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
 
-      - name: Aceptar licencias con sdkmanager
+      - name: Accept all Android SDK licenses
         run: |
           yes | sdkmanager --licenses
 
-      - name: Instalar plataformas y build-tools
+      - name: Install SDK Packages
         run: |
           yes | sdkmanager \
             "platform-tools" \
@@ -61,7 +64,7 @@ jobs:
             libtool libltdl-dev libtool-bin \
             autoconf automake pkg-config m4 autoconf-archive
 
-      - name: Install Buildozer & friends
+      - name: Install Buildozer & dependencies
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install --user \
