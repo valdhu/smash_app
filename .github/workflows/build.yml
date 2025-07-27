@@ -29,7 +29,7 @@ jobs:
         buildozer android debug
 
     - name: Subir APK como artefacto
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: SmashApp-APK
         path: smash_app/bin/*.apk
