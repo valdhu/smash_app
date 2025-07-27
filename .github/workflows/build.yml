@@ -19,14 +19,17 @@ jobs:
           libssl-dev libffi-dev libsqlite3-dev zlib1g-dev libjpeg-dev libfreetype6-dev \
           libpng-dev git libtool m4 automake autoconf
 
+        # Descargar Command Line Tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
         unzip cmdline-tools.zip
         mkdir -p $HOME/android-sdk/cmdline-tools/latest
         mv cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest
 
+        # Configurar entorno
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
 
+        # Instalar Build Tools y aceptar licencias
         sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2"
         yes | sdkmanager --licenses
 
@@ -38,8 +41,7 @@ jobs:
       run: echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
 
     - name: Compilar APK con Buildozer
-      run: |
-        buildozer android release
+      run: buildozer android release
 
     - name: Subir APK como artefacto
       uses: actions/upload-artifact@v4
