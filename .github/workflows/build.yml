@@ -9,17 +9,23 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: latest
-          packages: |
-            platform-tools
-            platforms;android-33
-            build-tools;36.0.0
-            ndk;21.4.7075529
-          accept-android-sdk-licenses: true
-      - name: Configure Buildozer to use existing SDK
+          with:
+            cmdline-tools-version: latest
+            packages: platform-tools,platforms;android-33,build-tools;36.0.0,ndk;21.4.7075529
+      accept-android-sdk-licenses: true
+
+      - name: Install Android SDK packages
+  run: |
+    yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+      "platform-tools" \
+      "platforms;android-33" \
+      "build-tools;36.0.0" \
+      "ndk;21.4.7075529"
+      
+  - name: Configure Buildozer to use existing SDK
         run: |
           mkdir -p $HOME/.buildozer/android/platform
           ln -s $ANDROID_SDK_ROOT $HOME/.buildozer/android/platform/android-sdk
@@ -39,6 +45,7 @@ jobs:
             libjpeg-dev libfreetype6-dev libpng-dev git \
             libtool libltdl-dev libtool-bin \
             autoconf automake pkg-config m4 autoconf-archive
+            
       - name: Install Buildozer, Cython and p4a patched
         run: |
           python3 -m pip install --upgrade pip
@@ -46,12 +53,15 @@ jobs:
             cython==0.29.34 \
             python-for-android==2024.10.1 \
             buildozer
+            
       - name: Decode keystore from secret
         run: |
           echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
+          
       - name: Build APK (release)
         run: |
           buildozer android release
+          
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
