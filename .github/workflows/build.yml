@@ -8,34 +8,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      ANDROID_SDK_ROOT: $HOME/android-sdk
+
     steps:
     - name: Clonar repo
       uses: actions/checkout@v3
 
-    - name: Instalar dependencias + SDK de Android
+    - name: Instalar dependencias + SDK Android con estructura válida
       run: |
         sudo apt-get update
         sudo apt-get install -y wget unzip openjdk-11-jdk python3-pip build-essential \
           libssl-dev libffi-dev libsqlite3-dev zlib1g-dev libjpeg-dev libfreetype6-dev \
           libpng-dev git libtool m4 automake autoconf
 
-        # Descargar Command Line Tools
+        # Descargar y configurar command-line tools
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-        unzip cmdline-tools.zip
-        mkdir -p $HOME/android-sdk/cmdline-tools/latest
-        mv cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest
+        unzip -q cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools/temp
+        mv $ANDROID_SDK_ROOT/cmdline-tools/temp/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
 
-        # Configurar entorno
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
         export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
 
-        # Instalar componentes y aceptar licencias
-        sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;36.0.0"
-        yes | sdkmanager --licenses
+        # Instalar plataforma y build-tools 36 + aceptar licencias
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
+          "platform-tools" "platforms;android-33" "build-tools;36.0.0"
+
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
 
     - name: Instalar Buildozer y dependencias Python
-      run: |
-        pip install --user buildozer cython
+      run: pip install --user buildozer cython
 
     - name: Decodificar keystore desde secreto
       run: echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
