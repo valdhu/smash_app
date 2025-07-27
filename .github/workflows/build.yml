@@ -22,10 +22,10 @@ jobs:
     - name: Instalar Buildozer y dependencias Python
       run: |
         pip install --user buildozer cython
+        echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
 
     - name: Inicializar Buildozer y compilar
       run: |
-        cd smash_app  # Ajustá esto si tu main.py está en otra carpeta
         buildozer android debug
 
     - name: Subir APK como artefacto
