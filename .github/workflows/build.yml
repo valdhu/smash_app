@@ -19,10 +19,23 @@ jobs:
         build-tools: 36.0.0
         ndk: 21.4.7075529
 
+    # 1) Instalar los command-line tools “latest”
+    - name: Instalar cmdline-tools latest
+      run: |
+        yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT "cmdline-tools;latest"
+
+    # 2) Aceptar todas las licencias con el nuevo sdkmanager
     - name: Aceptar licencias del SDK
       run: |
-        yes | sdkmanager --licenses
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
 
+    # 3) Remplazar el folder “tools” obsoleto (evita el error de XmlSchema)
+    - name: Reemplazar tools por cmdline-tools/latest
+      run: |
+        rm -rf $ANDROID_SDK_ROOT/tools
+        ln -s $ANDROID_SDK_ROOT/cmdline-tools/latest $ANDROID_SDK_ROOT/tools
+
+    # 4) Forzar a Buildozer a usar tu SDK configurado
     - name: Configurar Buildozer para usar el SDK instalado
       run: |
         mkdir -p $HOME/.buildozer/android/platform
@@ -31,9 +44,10 @@ jobs:
     - name: Instalar dependencias del sistema
       run: |
         sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk python3-pip build-essential \
-          libssl-dev libffi-dev libsqlite3-dev zlib1g-dev libjpeg-dev libfreetype6-dev \
-          libpng-dev git libtool m4 automake autoconf
+        sudo apt-get install -y openjdk-11-jdk python3-pip \
+          build-essential libssl-dev libffi-dev libsqlite3-dev \
+          zlib1g-dev libjpeg-dev libfreetype6-dev libpng-dev \
+          git libtool m4 automake autoconf
 
     - name: Instalar Buildozer y Cython
       run: pip install --user buildozer cython
