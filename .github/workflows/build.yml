@@ -16,25 +16,12 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: latest
-          packages: |
-            platforms;android-33
-            build-tools;36.0.0
-            ndk;21.4.7075529
+          packages:
+            - "platform-tools"
+            - "platforms;android-33"
+            - "build-tools;36.0.0"
+            - "ndk;21.4.7075529"
           accept-android-sdk-licenses: true
-
-      - name: Install cmdline-tools;latest
-        run: |
-          yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT "cmdline-tools;latest"
-
-      - name: Accept Android SDK licenses
-        run: |
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
-            --sdk_root=$ANDROID_SDK_ROOT --licenses
-
-      - name: Replace obsolete tools directory
-        run: |
-          rm -rf $ANDROID_SDK_ROOT/tools
-          ln -s $ANDROID_SDK_ROOT/cmdline-tools/latest $ANDROID_SDK_ROOT/tools
 
       - name: Configure Buildozer to use existing SDK
         run: |
@@ -51,7 +38,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            openjdk-11-jdk python3-pip build-essential \
+            openjdk-11-jdk python3-dev python3-pip build-essential \
             libssl-dev libffi-dev libsqlite3-dev zlib1g-dev \
             libjpeg-dev libfreetype6-dev libpng-dev git \
             libtool libltdl-dev libtool-bin \
