@@ -11,40 +11,44 @@ jobs:
 
     env:
       ANDROID_SDK_ROOT: $HOME/Android/Sdk
-      ANDROID_HOME:    $HOME/Android/Sdk
+      ANDROID_HOME:     $HOME/Android/Sdk
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install SDK Command-Line Tools (v9123335)
+      - name: Install SDK Command-Line Tools (v8512546)
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y unzip wget tar
+
           mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip -O cmdline.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline.zip
+
+          # Descomprimir a una carpeta temporal
           unzip -q cmdline.zip -d $ANDROID_SDK_ROOT/cmdline-tools
-          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
           rm cmdline.zip
+
+          # Reestructurar para que sdkmanager quede en cmdline-tools/latest/bin
+          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
 
       - name: Add Android SDK tools to PATH
         run: |
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools"          >> $GITHUB_PATH
 
-      - name: Pre-accept SDK licenses
+      - name: Pre-accept SDK licenses (opcional)
         run: |
           mkdir -p $ANDROID_SDK_ROOT/licenses
           echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
 
       - name: Accept all Android SDK licenses
-        run: |
-          yes | sdkmanager --licenses
+        run: yes | sdkmanager --licenses
 
       - name: Install SDK Packages
         run: |
-          yes | sdkmanager \
+          sdkmanager \
             "platform-tools" \
             "platforms;android-33" \
             "build-tools;36.0.0"
@@ -77,8 +81,7 @@ jobs:
           echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > key.keystore
 
       - name: Build APK (release)
-        run: |
-          ~/.local/bin/buildozer android release
+        run: ~/.local/bin/buildozer android release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
