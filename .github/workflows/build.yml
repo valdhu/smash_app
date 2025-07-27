@@ -1,0 +1,35 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repo
+      uses: actions/checkout@v3
+
+    - name: Instalar dependencias del sistema
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pip build-essential libssl-dev \
+          libffi-dev libsqlite3-dev zlib1g-dev libjpeg-dev libfreetype6-dev \
+          libpng-dev openjdk-11-jdk unzip zip git libtool m4 automake autoconf
+
+    - name: Instalar Buildozer y dependencias Python
+      run: |
+        pip install --user buildozer cython
+
+    - name: Inicializar Buildozer y compilar
+      run: |
+        cd smash_app  # Ajustá esto si tu main.py está en otra carpeta
+        buildozer android debug
+
+    - name: Subir APK como artefacto
+      uses: actions/upload-artifact@v3
+      with:
+        name: SmashApp-APK
+        path: smash_app/bin/*.apk
