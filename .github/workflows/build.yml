@@ -38,6 +38,12 @@ jobs:
         mkdir -p $HOME/.buildozer/android/platform
         ln -s $ANDROID_SDK_ROOT $HOME/.buildozer/android/platform/android-sdk
 
+    - name: Instalar Python 3.10
+       run: |
+        sudo apt-get update
+        sudo apt-get install -y python3.10 python3.10-dev
+        sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+
     - name: Install system dependencies
       run: |
         sudo apt-get update
